@@ -3,6 +3,8 @@ import gleam/result.{flatten}
 import gleam/bit_string.{byte_size}
 import gleasm/leb128
 import gleasm/section.{Section, parse_section}
+import gleasm/instruction
+//import gleasm/instruction.{Instruction}
 
 pub type RawModule =
   BitString
@@ -24,7 +26,7 @@ fn split_sections(sections: List(Section), rest: BitString) -> List(Section) {
   let parsed = parse_section(section_code, unparsed_section)
 
   case rest {
-    <<>> -> sections
+    <<>> -> [parsed, ..sections]
     bin -> split_sections([parsed, ..sections], bin)
   }
 }

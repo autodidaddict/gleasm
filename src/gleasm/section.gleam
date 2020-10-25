@@ -1,3 +1,13 @@
+import gleam/bit_string 
+import gleam/result.{unwrap}
+import gleam/io
+
+import gleasm/leb128
+
+pub type DataEntry {
+  DataEntry(index: Int, offset: Int, data: BitString)
+}
+
 pub type Section {
   TypeSection
   FunctionSection
@@ -9,12 +19,26 @@ pub type Section {
   StartSection
   ElementSection
   CodeSection
-  CustomSection
-  DataSection
+  CustomSection(name: String, raw: BitString)
+  DataSection(entries: List(DataEntry))
+  NameSection
 }
 
-fn parse_custom_section(unparsed: BitString) -> Section {
-  CustomSection
+fn parse_name_section(unparsed: BitString) -> Section {
+  NameSection 
+}
+
+fn parse_custom_section(unparsed: BitString) -> Section { 
+    let tuple(name_len, rest) = leb128.decode_unsigned(unparsed)
+    let <<name:bytes-size(name_len), rest:binary>> = rest    
+    io.debug(name)
+    let sect_name = name
+               |> bit_string.to_string
+               |> unwrap("unknown")
+    case sect_name {
+        "name" -> parse_name_section(rest)
+        _ -> CustomSection(name: sect_name, raw: rest)
+    }    
 }
 
 fn parse_type_section(unparsed: BitString) -> Section {
@@ -57,8 +81,27 @@ fn parse_code_section(unparsed: BitString) -> Section {
   CodeSection
 }
 
+//fn parse_entries(parsed: List(DataEntry), binary: BitString) -> List(DataEntry) {
+//  case binary {
+    //<<>> -> parsed
+//    _ -> {
+//      let tuple(index, rest) = leb128.decode_unsigned(binary)
+//      let tuple(offset, rest) = Util.evaluate_init_expr(rest)
+//    {size, rest} = LEB128.decode_unsigned(rest)
+//    <<data::bytes-size(size), rest::binary>> = rest
+//    }
+//  }
+//}
+
 fn parse_data_section(unparsed: BitString) -> Section {
-  DataSection
+  let tuple(count, entries) = leb128.decode_unsigned(unparsed)
+  
+//  let entries = case count, entries {
+    //0, _ -> []
+    //_, entries -> parse_entries([],entries)    
+  //}
+  
+  DataSection(entries: [])
 }
 
 pub fn parse_section(section_code: Int, unparsed: BitString) -> Section {
