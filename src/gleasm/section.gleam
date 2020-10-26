@@ -1,7 +1,6 @@
-import gleam/bit_string 
+import gleam/bit_string
 import gleam/result.{unwrap}
 import gleam/io
-
 import gleasm/leb128
 
 pub type DataEntry {
@@ -25,20 +24,21 @@ pub type Section {
 }
 
 fn parse_name_section(unparsed: BitString) -> Section {
-  NameSection 
+  NameSection
 }
 
-fn parse_custom_section(unparsed: BitString) -> Section { 
-    let tuple(name_len, rest) = leb128.decode_unsigned(unparsed)
-    let <<name:bytes-size(name_len), rest:binary>> = rest    
-    io.debug(name)
-    let sect_name = name
-               |> bit_string.to_string
-               |> unwrap("unknown")
-    case sect_name {
-        "name" -> parse_name_section(rest)
-        _ -> CustomSection(name: sect_name, raw: rest)
-    }    
+fn parse_custom_section(unparsed: BitString) -> Section {
+  let tuple(name_len, rest) = leb128.decode_unsigned(unparsed)
+  let <<name:binary-size(name_len), rest:binary>> = rest
+  io.debug(name)
+  let sect_name =
+    name
+    |> bit_string.to_string
+    |> unwrap("unknown")
+  case sect_name {
+    "name" -> parse_name_section(rest)
+    _ -> CustomSection(name: sect_name, raw: rest)
+  }
 }
 
 fn parse_type_section(unparsed: BitString) -> Section {
@@ -83,7 +83,7 @@ fn parse_code_section(unparsed: BitString) -> Section {
 
 //fn parse_entries(parsed: List(DataEntry), binary: BitString) -> List(DataEntry) {
 //  case binary {
-    //<<>> -> parsed
+//<<>> -> parsed
 //    _ -> {
 //      let tuple(index, rest) = leb128.decode_unsigned(binary)
 //      let tuple(offset, rest) = Util.evaluate_init_expr(rest)
@@ -92,15 +92,12 @@ fn parse_code_section(unparsed: BitString) -> Section {
 //    }
 //  }
 //}
-
 fn parse_data_section(unparsed: BitString) -> Section {
   let tuple(count, entries) = leb128.decode_unsigned(unparsed)
-  
-//  let entries = case count, entries {
-    //0, _ -> []
-    //_, entries -> parse_entries([],entries)    
+  //  let entries = case count, entries {
+  //0, _ -> []
+  //_, entries -> parse_entries([],entries)    
   //}
-  
   DataSection(entries: [])
 }
 

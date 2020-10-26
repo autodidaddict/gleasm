@@ -4,8 +4,8 @@ import gleam/bit_string.{byte_size}
 import gleasm/leb128
 import gleasm/section.{Section, parse_section}
 import gleasm/instruction
-//import gleasm/instruction.{Instruction}
 
+//import gleasm/instruction.{Instruction}
 pub type RawModule =
   BitString
 
